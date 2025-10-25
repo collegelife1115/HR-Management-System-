@@ -1,0 +1,23 @@
+# General
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Backend specific
+backend/node_modules
+backend/.env
+
+# Frontend specific
+# (This will cover your 'frontend' folder, which is currently empty,
+# and also 'frontend-app' if you use that name later)
+frontend/node_modules
+frontend/dist
+frontend/.env*
+frontend/coverage
+
+frontend-app/node_modules
+frontend-app/dist
+frontend-app/.env*
+frontend-app/coverage
