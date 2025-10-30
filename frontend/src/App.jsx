@@ -17,34 +17,29 @@ import PerformancePage from "./pages/PerformancePage";
 import AttendancePage from "./pages/AttendancePage";
 import AddEmployeePage from "./pages/AddEmployeePage";
 import SupportPage from "./pages/SupportPage";
+import MyTasksPage from "./pages/MyTasksPage";
 import DashboardLayout from "./components/DashboardLayout";
 
-// --- 1. IMPORT THE NEW TASKS PAGE ---
-import MyTasksPage from "./pages/MyTasksPage"; // <-- ADDED THIS
+// --- 1. IMPORT THE NEW PROFILE PAGE ---
+import EmployeeProfilePage from "./pages/EmployeeProfilePage"; // <-- ADDED THIS
 
-// --- This component protects your dashboard routes ---
+// --- (ProtectedRoutes and LoginRoute components are unchanged) ---
 const ProtectedRoutes = () => {
   const { user } = useUser();
-
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-
   return (
     <DashboardLayout>
       <Outlet />
     </DashboardLayout>
   );
 };
-
-// --- This component handles the login page route ---
 const LoginRoute = () => {
   const { user } = useUser();
-
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
-
   return <LoginPage />;
 };
 
@@ -62,12 +57,14 @@ export default function App() {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="employees" element={<EmployeesPage />} />
             <Route path="employees/new" element={<AddEmployeePage />} />
+
+            {/* --- 2. ADD THE NEW DYNAMIC ROUTE --- */}
+            <Route path="employees/:id" element={<EmployeeProfilePage />} />
+
             <Route path="attendance" element={<AttendancePage />} />
             <Route path="payroll" element={<PayrollPage />} />
             <Route path="performance" element={<PerformancePage />} />
             <Route path="support" element={<SupportPage />} />
-
-            {/* --- 2. ADD THE NEW ROUTE --- */}
             <Route path="my-tasks" element={<MyTasksPage />} />
           </Route>
 

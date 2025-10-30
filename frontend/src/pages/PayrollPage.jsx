@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
 import axiosInstance from "../api/axiosInstance";
 
+// --- 1. IMPORT THE NEW MODAL ---
+import AddPayrollModal from "../components/AddPayrollModal.jsx";
+
 // --- Icons ---
 const IconPlus = (props) => (
   <svg
@@ -57,10 +60,13 @@ const IconClock = (props) => (
 // --- End Icons ---
 
 const PayrollPage = () => {
-  const { user } = useUser(); // Get current user
+  const { user } = useUser();
   const [payrolls, setPayrolls] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // --- 2. ADD STATE TO CONTROL THE MODAL ---
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Helper to format date strings
   const formatDate = (dateString) => {
@@ -75,125 +81,153 @@ const PayrollPage = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD", // You can change this
+      currency: "USD",
     }).format(amount);
   };
 
+  const fetchPayrolls = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.get("/payroll");
+      setPayrolls(response.data);
+    } catch (err) {
+      setError(err.message || "Failed to fetch payroll records");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchPayrolls = async () => {
-      try {
-        setIsLoading(true);
-        const response = await axiosInstance.get("/payroll");
-        setPayrolls(response.data);
-      } catch (err) {
-        setError(err.message || "Failed to fetch payroll records");
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchPayrolls();
   }, []);
 
+  // --- 3. FUNCTION TO UPDATE LIST AFTER ADDING ---
+  const handleRecordAdded = (newRecord) => {
+    // Re-fetch all payrolls to get the populated data
+    fetchPayrolls();
+  };
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Payroll</h1>
+    <>
+      {/* --- 4. RENDER THE MODAL --- */}
+      <AddPayrollModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onRecordAdded={handleRecordAdded}
+      />
 
-        {/* --- CONDITIONAL "CREATE" BUTTON --- */}
-        {user.role === "admin" && (
-          <button className="flex items-center bg-indigo-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
-            <IconPlus className="w-5 h-5 mr-2" />
-            Create Payroll Record
-          </button>
-        )}
-      </div>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Payroll</h1>
 
-      {/* --- Dynamic Payroll Table --- */}
-      <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Employee
-              </th>
-              <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Pay Period
-              </th>
-              <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Gross Salary
-              </th>
-              <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Deductions
-              </th>
-              <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Net Salary
-              </th>
-              <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {isLoading ? (
+          {/* --- 5. CONNECT THE BUTTON --- */}
+          {user.role === "admin" && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center bg-indigo-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+            >
+              <IconPlus className="w-5 h-5 mr-2" />
+              Create Payroll Record
+            </button>
+          )}
+        </div>
+
+        {/* --- Dynamic Payroll Table --- */}
+        <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan="6" className="text-center py-4">
-                  Loading payroll records...
-                </td>
+                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Employee
+                </th>
+                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Pay Period
+                </th>
+                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Gross Salary
+                </th>
+                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Deductions
+                </th>
+                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Net Salary
+                </th>
+                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
               </tr>
-            ) : error ? (
-              <tr>
-                <td colSpan="6" className="text-center py-4 text-red-500">
-                  {error}
-                </td>
-              </tr>
-            ) : payrolls.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="text-center py-4 text-gray-500">
-                  No payroll records found.
-                </td>
-              </tr>
-            ) : (
-              payrolls.map((record) => (
-                <tr key={record._id}>
-                  <td className="py-4 px-6 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">
-                      {record.employee.firstName} {record.employee.lastName}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {record.employee.jobTitle}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(record.periodStartDate)} -{" "}
-                    {formatDate(record.periodEndDate)}
-                  </td>
-                  <td className="py-4 px-6 whitespace-nowrap text-sm text-green-600">
-                    {formatCurrency(record.grossSalary)}
-                  </td>
-                  <td className="py-4 px-6 whitespace-nowrap text-sm text-red-600">
-                    {formatCurrency(record.deductions)}
-                  </td>
-                  <td className="py-4 px-6 whitespace-nowrap text-sm font-bold text-gray-900">
-                    {formatCurrency(record.netSalary)}
-                  </td>
-                  <td className="py-4 px-6 whitespace-nowrap">
-                    {record.status === "Paid" ? (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        <IconCheckCircle className="w-4 h-4 mr-1" /> Paid
-                      </span>
-                    ) : (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                        <IconClock className="w-4 h-4 mr-1" /> Pending
-                      </span>
-                    )}
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {isLoading ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-4">
+                    Loading payroll records...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : error ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-4 text-red-500">
+                    {error}
+                  </td>
+                </tr>
+              ) : payrolls.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-4 text-gray-500">
+                    No payroll records found.
+                  </td>
+                </tr>
+              ) : (
+                payrolls.map((record) => (
+                  <tr key={record._id}>
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      {record.employee ? (
+                        <>
+                          <div className="font-medium text-gray-900">
+                            {record.employee.firstName}{" "}
+                            {record.employee.lastName}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {record.employee.jobTitle}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-sm text-red-500">
+                          Employee not found
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(record.periodStartDate)} -{" "}
+                      {formatDate(record.periodEndDate)}
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap text-sm text-green-600">
+                      {formatCurrency(record.grossSalary)}
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap text-sm text-red-600">
+                      {formatCurrency(record.deductions)}
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap text-sm font-bold text-gray-900">
+                      {formatCurrency(record.netSalary)}
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      {record.status === "Paid" ? (
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          <IconCheckCircle className="w-4 h-4 mr-1" /> Paid
+                        </span>
+                      ) : (
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                          <IconClock className="w-4 h-4 mr-1" /> Pending
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

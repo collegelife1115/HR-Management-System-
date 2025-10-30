@@ -71,8 +71,10 @@ const AddPayrollModal = ({ isOpen, onClose, onRecordAdded }) => {
         periodEndDate,
         grossSalary: parseFloat(grossSalary),
         deductions: parseFloat(deductions),
+        // Net salary is calculated by the backend
       };
 
+      // This hits your POST /api/payroll endpoint
       const response = await axiosInstance.post("/payroll", payrollData);
 
       onRecordAdded(response.data); // Pass new record back to parent page
