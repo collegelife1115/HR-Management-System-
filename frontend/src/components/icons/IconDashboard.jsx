@@ -16,3 +16,4 @@ export const IconDashboard = (props) => (
     <path d="M18.7 8.3L12 15L7.1 10.1" />
   </svg>
 );
+export default IconDashboard;

@@ -1,40 +1,56 @@
 const Performance = require("../models/Performance");
-const Employee = require("../models/Employee");
+const Employee = require("../models/Employee"); // <-- THE MISSING IMPORT
 const asyncHandler = require("express-async-handler");
-
-// @desc    Create a new performance review
-// @route   POST /api/performance
-// @access  Private/Admin or Private/Manager
-exports.createReview = asyncHandler(async (req, res) => {
-  const { employeeId, rating, comments } = req.body;
-
-  // The 'reviewer' is the logged-in user (from our 'protect' middleware)
-  const reviewerId = req.user._id;
-
-  // Check if employee exists
-  const employee = await Employee.findById(employeeId);
-  if (!employee) {
-    res.status(404);
-    throw new Error("Employee not found");
-  }
-
-  const review = await Performance.create({
-    employee: employeeId,
-    reviewer: reviewerId,
-    rating,
-    comments,
-  });
-
-  res.status(201).json(review);
-});
 
 // @desc    Get all performance reviews
 // @route   GET /api/performance
-// @access  Private/Admin or Private/Manager or Private/HR
-exports.getAllReviews = asyncHandler(async (req, res) => {
-  const reviews = await Performance.find({})
-    .populate("employee", "firstName lastName position")
-    .populate("reviewer", "name email");
+// @access  Private/Admin, Private/HR
+exports.getAllPerformanceReviews = asyncHandler(async (req, res) => {
+  const reviews = await Performance.find({}).populate(
+    "employee",
+    "firstName lastName jobTitle"
+  );
+  res.status(200).json(reviews);
+});
 
+// @desc    Create a new performance review
+// @route   POST /api/performance
+// @access  Private/Admin, Private/HR
+exports.createPerformanceReview = asyncHandler(async (req, res) => {
+  const { employee, rating, comments, reviewDate } = req.body;
+
+  if (!employee || !rating || !reviewDate) {
+    res.status(400);
+    throw new Error("Please provide employee, rating, and review date");
+  }
+
+  const review = await Performance.create({
+    employee,
+    rating,
+    comments,
+    reviewDate,
+  });
+
+  // Populate the new review before sending it back
+  const populatedReview = await Performance.findById(review._id).populate(
+    "employee",
+    "firstName lastName jobTitle"
+  );
+
+  res.status(201).json(populatedReview);
+});
+
+// --- NEW FUNCTION (FIXED) ---
+// @desc    Get all performance reviews for the logged-in user
+// @route   GET /api/performance/my-reviews
+// @access  Private (any logged-in user)
+exports.getMyPerformanceReviews = asyncHandler(async (req, res) => {
+  const employeeProfile = await Employee.findOne({ user: req.user._id });
+  if (!employeeProfile) {
+    res.status(404);
+    throw new Error("Employee profile not found");
+  }
+
+  const reviews = await Performance.find({ employee: employeeProfile._id });
   res.status(200).json(reviews);
 });

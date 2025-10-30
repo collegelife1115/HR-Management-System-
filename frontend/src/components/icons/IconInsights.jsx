@@ -1,5 +1,7 @@
 import React from "react";
-export const IconUserPlus = (props) => (
+
+// Using TrendingUp icon for AI-Powered Insights
+export const IconInsights = (props) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
@@ -12,10 +14,10 @@ export const IconUserPlus = (props) => (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <line x1="19" y1="8" x2="19" y2="14" />
-    <line x1="22" y1="11" x2="16" y2="11" />
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+    <polyline points="17 6 23 6 23 12" />
   </svg>
 );
-export default IconUserPlus;
+
+// Optional: Default export
+export default IconInsights;

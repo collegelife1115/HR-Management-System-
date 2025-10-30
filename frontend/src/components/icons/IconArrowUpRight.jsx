@@ -17,3 +17,4 @@ export const IconArrowUpRight = (props) => (
     <polyline points="7 7 17 7 17 17"></polyline>
   </svg>
 );
+export default IconArrowUpRight;

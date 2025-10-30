@@ -16,3 +16,4 @@ export const IconSort = (props) => (
     <path d="M3 4h18M3 10h12M3 16h6M13 16l4 4 4-4" />
   </svg>
 );
+export default IconSort;

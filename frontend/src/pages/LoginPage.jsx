@@ -1,28 +1,40 @@
 import React, { useState } from "react";
-import { useUser } from "../context/UserContext"; // <-- FIX: Import useUser
+import axios from "axios"; // Use standard axios just for the login page
+import { useUser } from "../context/UserContext";
+
+const API_URL = "http://localhost:5001/api/auth/login";
 
 const LoginPage = () => {
-  // <-- FIX: Removed unused onLogin prop
-  const { handleLogin: contextLogin } = useUser(); // <-- FIX: Get handleLogin from context
+  const { handleLogin } = useUser();
 
-  const [selectedRole, setSelectedRole] = useState("hr");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // Use the admin user we created with curl
+  const [email, setEmail] = useState("vishwas.admin@hrms.com");
+  const [password, setPassword] = useState("strongpassword123");
+  const [error, setError] = useState(null);
 
-  const handleLoginSubmit = (e) => {
-    // <-- Renamed to avoid confusion
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    const userMap = {
-      admin: { name: "Vishwas (Admin)", role: "admin" },
-      hr: { name: "Shivani (HR)", role: "hr" },
-      manager: { name: "Akhil (Manager)", role: "manager" },
-      employee: { name: "Riya (Employee)", role: "employee" },
-    };
+    setError(null);
 
-    // --- FIX: Call the handleLogin function from the context ---
-    contextLogin(userMap[selectedRole] || userMap.hr);
+    try {
+      // 1. Make the REAL API call
+      const response = await axios.post(API_URL, {
+        email,
+        password,
+      });
 
-    // No navigation needed here, the router in App.jsx will handle it
+      // 2. On success, save the user and token to context/localStorage
+      // response.data contains { _id, name, email, role, token }
+      handleLogin(response.data, response.data.token);
+
+      // The router will now automatically redirect to the dashboard
+    } catch (err) {
+      // 3. On failure, show an error
+      console.error("Login failed:", err);
+      setError(
+        err.response?.data?.message || "An error occurred. Please try again."
+      );
+    }
   };
 
   return (
@@ -42,9 +54,16 @@ const LoginPage = () => {
           <h2 className="text-4xl font-bold text-gray-800 mb-8">Log in</h2>
 
           <form onSubmit={handleLoginSubmit} className="space-y-6">
-            {" "}
-            {/* <-- FIX: Use new submit handler */}
-            {/* User ID field */}
+            {error && (
+              <div
+                className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                role="alert"
+              >
+                <strong className="font-bold">Login Failed: </strong>
+                <span className="block sm:inline">{error}</span>
+              </div>
+            )}
+
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg
@@ -68,11 +87,11 @@ const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                placeholder="User ID"
+                placeholder="User ID (Email)"
                 required
               />
             </div>
-            {/* Password field */}
+
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg
@@ -100,21 +119,8 @@ const LoginPage = () => {
                 required
               />
             </div>
-            {/* Role Select and Forgot Password */}
-            <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-              <div className="w-full sm:w-auto sm:flex-1 sm:mr-4">
-                <select
-                  id="role"
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-100 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                >
-                  <option value="hr">HR</option>
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="employee">Employee</option>
-                </select>
-              </div>
+
+            <div className="flex justify-end items-center">
               <a
                 href="#"
                 className="text-indigo-600 text-sm font-medium hover:underline"
@@ -122,6 +128,7 @@ const LoginPage = () => {
                 Forgot Password?
               </a>
             </div>
+
             <button
               type="submit"
               className="w-full bg-indigo-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-600 transition-colors"

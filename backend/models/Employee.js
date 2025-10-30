@@ -2,43 +2,54 @@ const mongoose = require("mongoose");
 
 const employeeSchema = new mongoose.Schema(
   {
-    // Link this employee profile to a user account in the User model
+    // This links to the User model (for login)
     user: {
-      type: mongoose.Schema.ObjectId,
-      ref: "User",
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
-      unique: true, // One employee profile per user account
+      ref: "User",
     },
     firstName: {
       type: String,
-      required: [true, "Please add a first name"],
+      required: true,
     },
     lastName: {
       type: String,
-      required: [true, "Please add a last name"],
+      required: true,
     },
-    position: {
+    email: {
       type: String,
-      required: [true, "Please add a position (e.g., Software Engineer)"],
+      required: true,
+      unique: true,
+    },
+    // New fields from your design
+    employeeId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    joiningDate: {
+      type: Date,
+      required: true,
     },
     department: {
       type: String,
-      enum: ["Engineering", "HR", "Marketing", "Sales", "Management"],
-      required: [true, "Please add a department"],
+      required: true,
+    },
+    jobTitle: {
+      // This is "Position" on your form
+      type: String,
+      required: true,
     },
     salary: {
       type: Number,
-      required: [true, "Please add a salary"],
+      required: true,
     },
-    dateOfJoining: {
-      type: Date,
-      default: Date.now,
-    },
-    // We can add more fields here later (contact, address, etc.)
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model("Employee", employeeSchema);
+const Employee = mongoose.model("Employee", employeeSchema);
+
+module.exports = Employee;

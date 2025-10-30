@@ -19,3 +19,4 @@ export const IconLifeBuoy = (props) => (
     <path d="M7.5 10L6 12L7.5 14" />
   </svg>
 );
+export default IconLifeBuoy;

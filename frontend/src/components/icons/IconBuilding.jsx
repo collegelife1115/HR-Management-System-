@@ -27,3 +27,4 @@ export const IconBuilding = () => (
     <path d="M8 14h.01" />
   </svg>
 );
+export default IconBuilding;

@@ -1,33 +1,42 @@
 import React, { createContext, useState, useContext } from "react";
 
-// 1. Create the context
 const UserContext = createContext(null);
 
-// 2. Create the provider component
-// This component will wrap our entire app and "provide" the user data
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  // Load initial user and token from localStorage
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [token, setToken] = useState(() => {
+    return localStorage.getItem("token") || null;
+  });
 
-  const handleLogin = (loggedInUser) => {
+  // Save to localStorage on login
+  const handleLogin = (loggedInUser, userToken) => {
     setUser(loggedInUser);
-    console.log("User logged in:", loggedInUser);
-    // In a real app, you'd also store the token
+    setToken(userToken);
+    localStorage.setItem("user", JSON.stringify(loggedInUser));
+    localStorage.setItem("token", userToken);
+    console.log("User logged in and token stored.");
   };
 
+  // Clear from localStorage on logout
   const handleLogout = () => {
     setUser(null);
-    console.log("User logged out");
-    // Clear token here
+    setToken(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    console.log("User logged out and token cleared.");
   };
 
   return (
-    <UserContext.Provider value={{ user, handleLogin, handleLogout }}>
+    <UserContext.Provider value={{ user, token, handleLogin, handleLogout }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-// 3. Create a custom hook to easily access the context
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {

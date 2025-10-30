@@ -19,3 +19,4 @@ export const IconClipboardList = (props) => (
     <path d="M8 8l8 0"></path>
   </svg>
 );
+export default IconClipboardList;

@@ -5,6 +5,10 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
+// --- 1. IMPORT NEW ROUTES ---
+const payrollRoutes = require("./routes/payrollRoutes");
+const attendanceRoutes = require("./routes/attendanceRoutes"); // <-- ADDED THIS
+
 const app = express();
 // This is correct. It will read PORT=5001 from your .env file
 const PORT = process.env.PORT || 5000;
@@ -13,7 +17,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors()); // Enable CORS for frontend communication
 app.use(express.json()); // Allows parsing of JSON requests
 
-// 1. MongoDB Connection Function
+// MongoDB Connection Function
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
@@ -33,18 +37,18 @@ app.get("/", (req, res) => {
   res.send("AI-HRMS Backend API is running!");
 });
 
-// 2. Route Definition (Link the Auth routes)
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/users", require("./routes/userRoutes"));
-app.use("/api/employees", require("./routes/employeeRoutes")); // <-- THIS IS THE MISSING LINE
+// 2. Route Definitions (Cleaned up duplicates)
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/employees", require("./routes/employeeRoutes"));
 app.use("/api/performance", require("./routes/performanceRoutes"));
 app.use("/api/ai", require("./routes/aiRoutes.js"));
+app.use("/api/payroll", payrollRoutes);
+// --- 3. ADD NEW ATTENDANCE ROUTE ---
+app.use("/api/attendance", attendanceRoutes); // <-- ADDED THIS
 
 // ------------------------------------------------------------------
-// 3. Error Middleware (MUST BE LAST, catches errors from async-handler)
+// 4. Error Middleware (MUST BE LAST, catches errors from async-handler)
 app.use(notFound);
 app.use(errorHandler);
 // ------------------------------------------------------------------
