@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://hr-management-system-6a3b.onrender.com",
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // This is the interceptor. It runs BEFORE every request.
