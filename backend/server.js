@@ -5,10 +5,10 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-// --- 1. Define allowed origins (Your Vercel URL is explicitly listed) ---
+// --- Define allowed origins (Your Vercel URL is explicitly listed) ---
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://hr-management-system-collegelife1115s-projects.vercel.app",
+  "https://hr-management-system-git-main-collegelife1115s-projects.vercel.app",
 ];
 
 const payrollRoutes = require("./routes/payrollRoutes");
@@ -17,11 +17,11 @@ const attendanceRoutes = require("./routes/attendanceRoutes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- 2. CRITICAL FIX: Explicit CORS Configuration (Must come before app.use(express.json())) ---
+// --- 1. CRITICAL FIX: Correct CORS Configuration Block ---
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl)
+      // Allow requests with no origin (like mobile apps, curl, or same-origin on Render)
       if (!origin) return callback(null, true);
       // Check if the requesting origin is in our allowed list
       if (allowedOrigins.indexOf(origin) === -1) {
@@ -32,7 +32,7 @@ app.use(
       return callback(null, true);
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allows JWT token to be sent
+    credentials: true, // Allow JWT token to be sent
   })
 );
 // --- End CORS Configuration ---
