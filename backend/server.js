@@ -2,19 +2,45 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
+const cors = require("cors"); // Ensure this is imported
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-// --- 1. IMPORT NEW ROUTES ---
+// --- 1. Define allowed origins (including your Vercel URL) ---
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://hr-management-system-git-main-collegelife1115s-projects.vercel.app",
+];
+
+// --- Import new routes ---
 const payrollRoutes = require("./routes/payrollRoutes");
-const attendanceRoutes = require("./routes/attendanceRoutes"); // <-- ADDED THIS
+const attendanceRoutes = require("./routes/attendanceRoutes");
 
 const app = express();
-// This is correct. It will read PORT=5001 from your .env file
 const PORT = process.env.PORT || 5000;
 
+// --- 2. Correct CORS Configuration (MUST BE BEFORE express.json()) ---
+// This block correctly implements the policy to allow ONLY your Vercel and local origins.
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or same-origin on Render)
+      if (!origin) return callback(null, true);
+
+      // Check if the requesting origin is in our allowed list
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+// --- End CORS Configuration ---
+
 // Middleware setup
-app.use(cors()); // Enable CORS for frontend communication
 app.use(express.json()); // Allows parsing of JSON requests
 
 // MongoDB Connection Function
@@ -25,7 +51,7 @@ const connectDB = async () => {
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
     console.log("Check your MONGO_URI in the .env file!");
-    process.exit(1); // Exit process with failure if connection fails
+    process.exit(1);
   }
 };
 
@@ -37,18 +63,17 @@ app.get("/", (req, res) => {
   res.send("AI-HRMS Backend API is running!");
 });
 
-// 2. Route Definitions (Cleaned up duplicates)
+// 3. Route Definitions
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/employees", require("./routes/employeeRoutes"));
 app.use("/api/performance", require("./routes/performanceRoutes"));
 app.use("/api/ai", require("./routes/aiRoutes.js"));
 app.use("/api/payroll", payrollRoutes);
-// --- 3. ADD NEW ATTENDANCE ROUTE ---
-app.use("/api/attendance", attendanceRoutes); // <-- ADDED THIS
+app.use("/api/attendance", attendanceRoutes);
 
 // ------------------------------------------------------------------
-// 4. Error Middleware (MUST BE LAST, catches errors from async-handler)
+// 4. Error Middleware
 app.use(notFound);
 app.use(errorHandler);
 // ------------------------------------------------------------------
