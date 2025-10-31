@@ -42,7 +42,7 @@ const LoginPage = () => {
       {/* --- Left Side (Logo) --- */}
       <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12">
         <img
-          src="./assets/companyLogo.png"
+          src="/companyLogo.png"
           alt="HR Portal Logo"
           className="max-w-[300px] md:max-w-[400px]"
         />

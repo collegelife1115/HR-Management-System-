@@ -78,7 +78,7 @@ const DashboardLayout = ({ children }) => {
         } md:translate-x-0 transition-transform duration-200 ease-in-out md:flex md:flex-col md:w-64 h-screen`}
       >
         <div className="flex items-center justify-center h-20 bg-white border-b border-gray-200">
-          <img src="/assets/Dash.png" alt="HR Portal" className="h-10" />
+          <img src="/Dash.png" alt="HR Portal" className="h-10" />
         </div>
 
         {/* Render the dynamic nav items */}
