@@ -8,7 +8,7 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 // --- 1. Define allowed origins (Your Vercel URL is explicitly listed) ---
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://hr-management-system-git-main-collegelife1115s-projects.vercel.app",
+  "https://hr-management-system-collegelife1115s-projects.vercel.app",
 ];
 
 const payrollRoutes = require("./routes/payrollRoutes");
