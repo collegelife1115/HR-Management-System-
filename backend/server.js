@@ -2,30 +2,27 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors"); // Ensure this is imported
+const cors = require("cors");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-// --- 1. Define allowed origins (including your Vercel URL) ---
+// --- 1. Define allowed origins (Your Vercel URL is explicitly listed) ---
 const allowedOrigins = [
   "http://localhost:5173",
   "https://hr-management-system-git-main-collegelife1115s-projects.vercel.app",
 ];
 
-// --- Import new routes ---
 const payrollRoutes = require("./routes/payrollRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- 2. Correct CORS Configuration (MUST BE BEFORE express.json()) ---
-// This block correctly implements the policy to allow ONLY your Vercel and local origins.
+// --- 2. CRITICAL FIX: Explicit CORS Configuration (Must come before app.use(express.json())) ---
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or same-origin on Render)
+      // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
-
       // Check if the requesting origin is in our allowed list
       if (allowedOrigins.indexOf(origin) === -1) {
         const msg =
@@ -35,7 +32,7 @@ app.use(
       return callback(null, true);
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+    credentials: true, // Allows JWT token to be sent
   })
 );
 // --- End CORS Configuration ---
@@ -55,15 +52,13 @@ const connectDB = async () => {
   }
 };
 
-// Connect to DB immediately
 connectDB();
 
-// Simple root route for testing
 app.get("/", (req, res) => {
   res.send("AI-HRMS Backend API is running!");
 });
 
-// 3. Route Definitions
+// Route Definitions
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/employees", require("./routes/employeeRoutes"));
@@ -72,11 +67,9 @@ app.use("/api/ai", require("./routes/aiRoutes.js"));
 app.use("/api/payroll", payrollRoutes);
 app.use("/api/attendance", attendanceRoutes);
 
-// ------------------------------------------------------------------
-// 4. Error Middleware
+// Error Middleware
 app.use(notFound);
 app.use(errorHandler);
-// ------------------------------------------------------------------
 
 // Start the server
 app.listen(PORT, () => {
