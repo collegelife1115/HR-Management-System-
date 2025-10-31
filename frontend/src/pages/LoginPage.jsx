@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios"; // Use standard axios just for the login page
 import { useUser } from "../context/UserContext";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL + "/auth/login";
+const API_URL = import.meta.env.VITE_API_URL + "/auth/login";
 const LoginPage = () => {
   const { handleLogin } = useUser();
 
