@@ -8,8 +8,8 @@ const LoginPage = () => {
   const { handleLogin } = useUser();
 
   // Use the admin user we created with curl
-  const [email, setEmail] = useState("vishwas.admin@hrms.com");
-  const [password, setPassword] = useState("strongpassword123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
   const handleLoginSubmit = async (e) => {
