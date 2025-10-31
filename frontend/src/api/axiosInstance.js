@@ -3,6 +3,7 @@ import axios from "axios";
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
+console.log("API Base URL:", import.meta.env.VITE_API_URL);
 
 // This is the interceptor. It runs BEFORE every request.
 axiosInstance.interceptors.request.use(
