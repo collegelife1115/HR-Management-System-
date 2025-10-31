@@ -5,37 +5,40 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-// --- Define allowed origins (Your Vercel URL is explicitly listed) ---
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://hr-management-system-git-main-collegelife1115s-projects.vercel.app",
-];
-
 const payrollRoutes = require("./routes/payrollRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- 1. CRITICAL FIX: Correct CORS Configuration Block ---
+// --- ✅ FIXED CORS CONFIGURATION ---
+const allowedOrigins = [
+  "http://localhost:5173", // for local development
+  "https://hr-management-system-eta-ten.vercel.app", // ✅ your deployed frontend
+  "https://hr-management-system-git-main-collegelife1115s-projects.vercel.app", // optional preview build
+];
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or same-origin on Render)
+      // Allow requests with no origin (like mobile apps or same-origin requests)
       if (!origin) return callback(null, true);
-      // Check if the requesting origin is in our allowed list
-      if (allowedOrigins.indexOf(origin) === -1) {
+
+      // Check if the origin is allowed
+      if (!allowedOrigins.includes(origin)) {
+        console.log("❌ Blocked by CORS:", origin);
         const msg =
           "The CORS policy for this site does not allow access from the specified Origin.";
         return callback(new Error(msg), false);
       }
+
+      console.log("✅ Allowed by CORS:", origin);
       return callback(null, true);
     },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allow JWT token to be sent
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true, // allow cookies or auth headers
   })
 );
-// --- End CORS Configuration ---
 
 // Middleware setup
 app.use(express.json()); // Allows parsing of JSON requests
@@ -44,9 +47,9 @@ app.use(express.json()); // Allows parsing of JSON requests
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB connected successfully! 🚀");
+    console.log("✅ MongoDB connected successfully!");
   } catch (error) {
-    console.error("MongoDB connection failed:", error.message);
+    console.error("❌ MongoDB connection failed:", error.message);
     console.log("Check your MONGO_URI in the .env file!");
     process.exit(1);
   }
@@ -54,8 +57,9 @@ const connectDB = async () => {
 
 connectDB();
 
+// Base route
 app.get("/", (req, res) => {
-  res.send("AI-HRMS Backend API is running!");
+  res.send("AI-HRMS Backend API is running! 🚀");
 });
 
 // Route Definitions
@@ -73,6 +77,6 @@ app.use(errorHandler);
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Access at: http://localhost:${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`🌐 Access it at: http://localhost:${PORT}`);
 });
